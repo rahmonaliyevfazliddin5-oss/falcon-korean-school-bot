@@ -11,8 +11,9 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 from sqlalchemy import select
-from app.database.session import async_session_maker, init_db
+
 from app.database.models import Student
+from app.database.session import async_session_maker, init_db
 
 STUDENTS_DATA = [
     {"full_name": "Odiljonov Biloliddin", "group_name": "9-sinf", "level": "o'rta"},

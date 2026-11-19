@@ -14,7 +14,10 @@ from aiogram.client.default import DefaultBotProperties
 from aiogram.client.session.aiohttp import AiohttpSession
 from aiogram.enums import ParseMode
 from aiogram.types import ErrorEvent
+from aiohttp import web
 
+import db
+from api.routes import setup_routes
 from app.config import settings
 from app.database.session import init_db
 from app.handlers import main_router
@@ -102,6 +105,7 @@ async def main() -> None:
     # Ma'lumotlar bazasini initsializatsiya qilish
     try:
         await init_db()
+        await db.init_db()
         logger.info("Ma'lumotlar bazasi jadvallari muvaffaqiyatli tekshirildi/yaratildi.")
     except Exception as e:
         logger.error(f"Ma'lumotlar bazasini ishga tushirishda xatolik: {e}")
@@ -136,6 +140,27 @@ async def main() -> None:
     scheduler.start()
     logger.info("Fon vazifalari (Scheduler) muvaffaqiyatli ishga tushirildi.")
 
+    # Mini App va API web serverini sozlash
+    web_app = web.Application()
+    setup_routes(web_app, bot=bot)
+
+    static_dir = os.path.abspath(os.path.join(os.path.dirname(os.path.dirname(__file__)), "static"))
+    if not os.path.exists(static_dir):
+        static_dir = os.path.abspath("static")
+
+    async def index_file_handler(request: web.Request) -> web.FileResponse:
+        return web.FileResponse(os.path.join(static_dir, "index.html"))
+
+    web_app.router.add_get("/", index_file_handler)
+    web_app.router.add_static("/static/", path=static_dir, name="static")
+    web_app.router.add_static("/", path=static_dir, name="root_static")
+
+    web_runner = web.AppRunner(web_app)
+    await web_runner.setup()
+    web_site = web.TCPSite(web_runner, host="0.0.0.0", port=settings.PORT)
+    await web_site.start()
+    logger.info(f"📱 Mini App va API serveri http://0.0.0.0:{settings.PORT} da faollashtirildi.")
+
     try:
         while True:
             try:
@@ -161,6 +186,10 @@ async def main() -> None:
                 bot.session = AiohttpSession()
                 await asyncio.sleep(3)
     finally:
+        try:
+            await web_runner.cleanup()
+        except Exception:
+            pass
         scheduler.shutdown()
         try:
             if bot.session and not bot.session.closed:

@@ -14,6 +14,9 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite+aiosqlite:///./falcon_school.db"
     LESSON_GROUP_ID: int | str = 0
     LOG_LEVEL: str = "INFO"
+    WEBAPP_URL: str = ""
+    PORT: int = 8080
+    FINE_AMOUNT: int = 10000
 
     @property
     def admin_ids_list(self) -> list[int]:

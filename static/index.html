@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Falcon School Boshqaruv</title>
+  <!-- Telegram WebApp SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Toast xabarnomalari -->
+  <div id="toast-container"></div>
+
+  <!-- 1. OBUNACHI (OTA-ONA) OYNASI: Faqat toza logo ko'rinadi -->
+  <div id="parent-view">
+    <div class="parent-logo-container">
+      <img src="logo.png" alt="Falcon Kibertexnology School Logo" class="parent-logo">
+    </div>
+  </div>
+
+  <!-- 2. ADMIN (O'QITUVCHI) TO'LIQ BOSHQARUV TIZIMI -->
+  <div id="admin-view" style="display: none;">
+
+    <!-- Yuqori qism: Markazda toza logo -->
+    <header class="app-header">
+      <img src="logo.png" alt="Falcon Logo" class="top-logo">
+    </header>
+
+    <!-- Haftalik jadval va kunlar tanlash bari (Davomat va Baho uchun) -->
+    <div id="date-bar" class="date-selector-container">
+      <div class="week-navigation">
+        <button id="prev-week-btn" class="nav-arrow-btn" aria-label="Oldingi hafta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <span id="current-date-label" class="current-date-title">...</span>
+        <button id="next-week-btn" class="nav-arrow-btn" aria-label="Keyingi hafta">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+
+      <!-- Du - Sh kunlar tabi (Yakshanba tanlab bo'lmaydi) -->
+      <div id="day-tabs-container" class="day-tabs"></div>
+    </div>
+
+    <!-- ==================== TAB 1: DAVOMAT ==================== -->
+    <section id="tab-attendance" class="tab-content active">
+      <div id="attendance-list" class="card-list">
+        <!-- O'quvchilar ro'yxati va katta toggle tugmalari chiqadi -->
+      </div>
+      <button id="save-attendance-btn" class="main-action-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Saqlash va yuborish
+      </button>
+    </section>
+
+    <!-- ==================== TAB 2: BAHO (UYGA VAZIFA) ==================== -->
+    <section id="tab-grades" class="tab-content">
+      <div id="grades-list" class="card-list">
+        <!-- Har bir o'quvchi uchun 0-10 ball va 'Vazifa qilmadi' tugmasi -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 3: O'QUVCHILAR ==================== -->
+    <section id="tab-students" class="tab-content">
+      <div class="search-box">
+        <input type="text" id="student-search-input" class="search-input" placeholder="O'quvchi ismini qidirish...">
+      </div>
+      <div style="margin-bottom: 12px;">
+        <button id="open-add-student-btn" class="action-btn-small pay" style="width: 100%; height: 44px; font-size: 14px;">
+          ➕ Yangi o'quvchi qo'shish
+        </button>
+      </div>
+      <div id="students-list" class="card-list">
+        <!-- O'quvchilar kartochkalari -->
+      </div>
+    </section>
+
+    <!-- ==================== TAB 4: QARZ VA TO'LOV ==================== -->
+    <section id="tab-debts" class="tab-content">
+      <div class="search-box">
+        <input type="text" id="debt-search-input" class="search-input" placeholder="Qarzdorlarni qidirish...">
+      </div>
+      <div id="debts-list" class="card-list">
+        <!-- Qarzdorlar eng yuqorida chiqadi -->
+      </div>
+    </section>
+
+    <!-- Pastki navigatsiya paneli (4 ta SVG ikonka) -->
+    <nav class="bottom-nav">
+      <button class="nav-item active" data-tab="attendance">
+        <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="9 16 11 18 15 14"></polyline></svg>
+        <span>Davomat</span>
+      </button>
+      <button class="nav-item" data-tab="grades">
+        <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+        <span>Baho</span>
+      </button>
+      <button class="nav-item" data-tab="students">
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+        <span>O'quvchilar</span>
+      </button>
+      <button class="nav-item" data-tab="debts">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line><line x1="6" y1="15" x2="10" y2="15"></line></svg>
+        <span>Qarz</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODALLAR -->
+
+  <!-- 1. Yangi o'quvchi qo'shish modali -->
+  <div id="add-student-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 class="modal-title">Yangi o'quvchi qo'shish</h3>
+      <input type="text" id="new-student-name" class="modal-input" placeholder="Ism Familiya (masalan: Aliyev Vali)">
+      <div class="modal-buttons">
+        <button id="cancel-add-student-btn" class="modal-btn cancel">Bekor qilish</button>
+        <button id="confirm-add-student-btn" class="modal-btn confirm">Qo'shish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. O'quvchi ismini tahrirlash modali -->
+  <div id="edit-student-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 class="modal-title">O'quvchini tahrirlash</h3>
+      <input type="text" id="edit-student-name" class="modal-input" placeholder="Ism Familiya">
+      <input type="hidden" id="edit-student-id">
+      <div class="modal-buttons">
+        <button id="cancel-edit-student-btn" class="modal-btn cancel">Bekor qilish</button>
+        <button id="confirm-edit-student-btn" class="modal-btn confirm">Saqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. To'lov qabul qilish modali -->
+  <div id="payment-modal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 id="payment-modal-title" class="modal-title">To'lov qabul qilish</h3>
+      <div id="payment-modal-debt" style="font-size: 14px; color: var(--hint-color);">Joriy qarz: 0 so'm</div>
+      <input type="number" id="payment-amount-input" class="modal-input" placeholder="To'lov summasi (so'm)">
+      <input type="hidden" id="payment-student-id">
+      <div class="modal-buttons">
+        <button id="cancel-payment-btn" class="modal-btn cancel">Bekor qilish</button>
+        <button id="confirm-payment-btn" class="modal-btn confirm">Tasdiqlash</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. To'lovlar tarixi modali -->
+  <div id="history-modal" class="modal-overlay">
+    <div class="modal-content" style="max-height: 80vh; overflow-y: auto;">
+      <h3 id="history-modal-title" class="modal-title">To'lovlar tarixi</h3>
+      <div id="history-payments-list" style="display: flex; flex-direction: column; gap: 8px;"></div>
+      <div style="margin-top: 10px;">
+        <button id="undo-last-payment-btn" class="modal-btn cancel" style="width: 100%; color: var(--danger-color); border: 1px solid var(--danger-color); display: none;">
+          ↩️ Oxirgi to'lovni bekor qilish
+        </button>
+      </div>
+      <div class="modal-buttons" style="margin-top: 10px;">
+        <button id="close-history-btn" class="modal-btn cancel" style="width: 100%;">Yopish</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

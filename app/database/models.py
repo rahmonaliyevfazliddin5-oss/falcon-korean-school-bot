@@ -106,9 +106,9 @@ class Lesson(Base):
 
 
 class Grade(Base):
-    """Baholar modeli."""
+    """Baholar modeli (Dars baholari)."""
 
-    __tablename__ = "grades"
+    __tablename__ = "lesson_grades"
     __table_args__ = (CheckConstraint("score >= 1 AND score <= 5", name="check_grade_score_range"),)
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)

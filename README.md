@@ -1,19 +1,46 @@
-# 🦅 Falcon Kibertexnology School — Koreys tili darslari Telegram Boti
+# 🦅 Falcon Kibertexnology School — Telegram Bot & O'quv Markaz Mini App
 
-Ushbu loyiha **"Falcon Kibertexnology School"** o'quv markazining koreys tili kurslari uchun ishlab chiqilgan zamonaviy, xavfsiz va to'liq avtomatlashtirilgan Telegram bot hisoblanadi.
+Ushbu loyiha **"Falcon Kibertexnology School"** o'quv markazining koreys tili kurslari uchun ishlab chiqilgan zamonaviy, xavfsiz va to'liq avtomatlashtirilgan Telegram bot hamda **Telegram Mini App (WebApp)** boshqaruv tizimi hisoblanadi.
 
-Loyiha toza arxitektura (**Handler -> Service -> Repository -> Database**) tamoyillari asosida qurilgan bo'lib, o'quvchilar, ota-onalar va o'qituvchilar (adminlar) o'rtasidagi ta'lim jarayonini osonlashtiradi.
+---
+
+## 🚀 Asosiy Imkoniyatlar
+
+### 1. 📱 O'qituvchi Boshqaruv Mini App'i (Faqat Admin uchun)
+- **Haftalik jadval:** Dushanba dan Shanbagacha (6 kun). Yakshanba tanlab bo'lmaydi.
+- **Kunlik davomat:** Katta toggle tugmalari (✅ Keldi / ❌ Kelmadi). "Saqlash va yuborish" orqali barcha faol obunachilarga chiroyli formatda avtomatik xabarnoma boradi.
+- **Uyga vazifa bahosi:** 0 dan 10 gacha ball tezkor tugmalari va izoh.
+- **"Vazifa qilmadi" tugmasi:** Bir bosishda bahoni 0 qilib, +10 000 so'm (`FINE_AMOUNT`) jarima yozadi. Qayta bosilsa jarimani bekor qiladi.
+- **Qarz va to'lovlar:** Joriy qarzlar ro'yxati (qarzdorlar eng yuqorida). "To'lov qabul qilish" tugmasi: `"Qarz 100 000 → to'landi 10 000 → qoldi 90 000 so'm"`. To'lovlar tarixi va oxirgi to'lovni bekor qilish imkoni.
+- **Xavfsizlik:** Serverda har bir so'rov Telegram `initData` orqali HMAC-SHA256 bilan tekshiriladi (24 soatdan eski so'rovlar rad etiladi). Begona foydalanuvchilar (ota-onalar) Mini App'ni ochsa, faqat markaziy logo ko'rinadi.
+
+### 2. 🏆 Haftalik Reyting (Botda)
+- Botdagi doimiy **"🏆 Reyting"** reply-tugmasi.
+- Eng so'nggi haftaning uyga vazifa baholari bo'yicha **TOP-4** reytingni ko'rsatadi:
+  ```text
+  🏆 Reyting (haftalik)
+  🥇 1. Ism Familiya , 48 ball
+  🥈 2. Ism Familiya , 45 ball
+  🥉 3. Ism Familiya , 41 ball
+  4. Ism Familiya , 39 ball
+
+  Agarda farzandingiz bu qatorda bo'lmasa, farzandingiz ustida ko'proq ishlashi kerak!
+  ```
+- Reyting xabarida qarz, jarima yoki davomat ma'lumotlari mutlaqo bo'lmaydi.
+
+### 3. 🎥 Video Dars va Guruh Nazorati
+- Video dars boshlanganda barcha obunachilarga taklif havolasi tarqatiladi.
+- Kontent himoyasi (anti-screenshot, anti-forwarding).
 
 ---
 
 ## 🛠 Texnik Stek
-- **Dasturlash tili:** Python 3.11+
-- **Asinxron Telegram freymvorki:** `aiogram 3.x`
-- **ORM va Ma'lumotlar bazasi:** `SQLAlchemy 2.0 (async)` + `aiosqlite` (PostgreSQL ga osongina ko'chirish mumkin)
-- **Konfiguratsiya va Validatsiya:** `pydantic-settings`, `python-dotenv`
-- **Rejalashtiruvchi (Scheduler):** `APScheduler` (15 daqiqa oldin dars eslatmalari va kunlik zaxira nusxalar)
-- **Eksport va Hisobot:** `openpyxl` (Excel .xlsx formatida eksport)
-- **Testlash va Sifat nazorati:** `pytest`, `pytest-asyncio`, `pytest-cov`, `ruff`, `mypy`
+- **Python:** 3.11+
+- **Telegram Bot:** `aiogram 3.x`
+- **Mini App & Web Server:** `aiohttp` (HTML5, CSS3, Vanilla JS, Telegram WebApp SDK)
+- **Ma'lumotlar bazasi:** `aiosqlite` + `SQLAlchemy 2.0 (async)`
+- **Vazifalar rejalashtiruvchisi:** `APScheduler`
+- **Sifat nazorati & Testlar:** `pytest`, `pytest-asyncio`, `ruff`
 
 ---
 
@@ -21,25 +48,26 @@ Loyiha toza arxitektura (**Handler -> Service -> Repository -> Database**) tamoy
 
 ```text
 falcon_bot/
+├── api/                         # Mini App REST API
+│   ├── auth.py                  # HMAC-SHA256 initData tekshiruvi va admin himoyasi
+│   └── routes.py                # O'quvchilar, davomat, baho, qarz va to'lov yo'llari
 ├── app/
-│   ├── main.py                  # Botni ishga tushirish, xatoliklar boshqaruvi va fon jarayonlari
-│   ├── config.py                # Pydantic sozlamalari (.env o'qish)
-│   ├── database/
-│   │   ├── models.py            # SQLAlchemy 2.0 async modellari (User, Student, Grade, Attendance...)
-│   │   ├── session.py           # Engine, Sessionmaker va init_db()
-│   │   └── repositories/        # CRUD operatsiyalari (Repository pattern)
-│   ├── handlers/
-│   │   ├── common.py            # /start, /admin, /export, /checkgroup
-│   │   ├── admin/               # O'quvchilar, baholash, davomat, izohlar, video darslar, statistika
-│   │   └── parent/              # Farzandim, baholar, davomat, izohlar, reyting, dars
-│   ├── keyboards/               # Inline va Reply klaviaturalar (CallbackData fabriklari)
-│   ├── middlewares/             # Autentifikatsiya va 1 soniyalik Throttling (Anti-flood)
-│   ├── services/                # Biznes mantiq (Grading, Attendance, Rating, Lessons)
-│   ├── states/                  # FSM holatlari
-│   └── utils/                   # Xavfsizlik nazorati, Excel eksport, Backup va Scheduler
-├── tests/                       # To'liq avtomatlashtirilgan testlar to'plami
-├── docker-compose.yml           # Docker orqali bir buyruq bilan ko'tarish
-├── Dockerfile                   # Xavfsiz non-root foydalanuvchili konteyner
+│   ├── main.py                  # Bot va aiohttp serverini birgalikda ishga tushirish
+│   ├── config.py                # Pydantic-settings konfiguratsiyasi
+│   ├── database/                # Baza modellari va omborlari
+│   ├── handlers/                # Admin, foydalanuvchi va reyting handlerlari
+│   ├── keyboards/               # Tugmalar va WebAppInfo
+│   ├── middlewares/             # Throttling va autentifikatsiya
+│   └── utils/                   # Scheduler, xavfsizlik va zaxiralash
+├── static/                      # Mini App frontend fayllari
+│   ├── index.html               # Asosiy HTML (Telegram WebApp)
+│   ├── app.js                   # Frontend mantiq va API integratsiyasi
+│   ├── styles.css               # Telegram mavzusiga moslashuvchan dizayn
+│   └── logo.png                 # O'quv markaz logotipi
+├── tests/                       # 55 ta to'liq avtomatlashtirilgan testlar
+├── db.py                        # Mini App uchun aiosqlite ma'lumotlar bazasi boshqaruvi
+├── config.py                    # Root sozlamalar eksporti
+├── deploy.sh                    # VPS serverga avtomat o'rnatish skripti
 ├── requirements.txt             # Barcha bog'liqliklar
 ├── .env.example                 # Muhit o'zgaruvchilari andozasi
 └── README.md                    # Loyiha qo'llanmasi
@@ -49,15 +77,14 @@ falcon_bot/
 
 ## ⚙️ O'rnatish va Sozlash
 
-### 1. Repozitoriyni yuklab olish va virtual muhitni yoqish
+### 1. Virtual muhit yaratish va faollashtirish
 ```bash
-cd falcon_bot
 python -m venv venv
 
 # Linux / MacOS:
 source venv/bin/activate
 
-# Windows (PowerShell):
+# Windows:
 venv\Scripts\Activate.ps1
 ```
 
@@ -71,111 +98,66 @@ pip install -r requirements.txt
 ```bash
 cp .env.example .env
 ```
-Fayl ichidagi o'zgaruvchilarni to'ldiring:
+Fayl ichidagi qiymatlarni to'ldiring:
 ```env
 BOT_TOKEN=1234567890:ABCdefGhIJKlmNoPQRsTUVwxyZ
 ADMIN_IDS=12345678,87654321
 DATABASE_URL=sqlite+aiosqlite:///./falcon_school.db
-LESSON_GROUP_ID=-1001234567890
+LESSON_GROUP_ID=
 LOG_LEVEL=INFO
+PORT=8080
+FINE_AMOUNT=10000
+WEBAPP_URL=https://your-domain.com
 ```
-> **Muhim:** Bot tokeni va admin ID lari kodga hech qachon yozilmaydi, faqat `.env` orqali uzatiladi.
 
-### 4. Botni ishga tushirish
+### 4. Bot va Mini App'ni ishga tushirish
 ```bash
 python -m app.main
 ```
+Bu buyruq:
+- Telegram botni tinglash rejimiga tushiradi (`polling`).
+- Mini App API va statik web serverini `http://0.0.0.0:8080` manzilida ishga tushiradi.
+- Fon vazifalari (Scheduler) ni yoqadi.
 
 ---
 
-## 🎥 Video Dars Guruhi va Kontent Himoyasi (Anti-Screenshot/Recording)
+## 🎨 O'quv Markaz Logotipini Almashtirish
 
-Telegram Bot API xavfsizlik cheklovlari tufayli bot bevosita video chatni boshlay olmaydi. Shu sababli quyidagi qulay tizim joriy qilingan:
+Mini App yuqori qismida va obunachilar oynasida ko'rinadigan logotipni o'zingizning haqiqiy logotipingizga almashtirish juda oson:
 
-1. **Guruh yaratish:** Darslar uchun yopiq Telegram guruhi yarating.
-2. **Botni guruhga qo'shish va Admin qilish:**
-   - Botni guruhga a'zo qilib qo'shing.
-   - Guruh boshqaruviga o'tib, botga **Administrator** huquqlarini bering (Ayniqsa: *Guruhga taklif havolalarini yaratish* huquqi zarur).
-3. **Kontentni saqlash va ekran yozib olishdan himoya:**
-   - Telegram guruh sozlamalarini oching: **Guruh turi (Group Type)** -> **Yopiq guruh (Private Group)**.
-   - Pastdagi **"Kontentni saqlashni cheklash" (Restrict saving content)** bandini **YOQING**.
-   - Ushbu sozlama o'quvchilarga video darslarni va materiallarni skrinshot qilish, saqlab olish yoki boshqalarga forward qilishni taqiqlaydi.
-4. **Xavfsizlikni tekshirish:**
-   - Botda admin sifatida `/checkgroup` buyrug'ini yuboring.
-   - Bot guruhda adminligi va kontent cheklovi yoqilganligini avtomatik tekshirib xabar beradi.
+1. O'zingizning logotip rasmingizni tayyorlang (format: `.png`, shaffof fonli bo'lishi tavsiya etiladi).
+2. Uni `static/logo.png` nomi bilan saqlab, loyihaning `static/` papkasidagi mavjud `logo.png` ustiga yozing:
+   ```bash
+   cp /path/to/your_logo.png static/logo.png
+   ```
+3. Mini App'ni yangilaganingizda yangi logotip markazda toza va chiroyli bo'lib chiqadi.
 
 ---
 
-## 🔒 Xavfsizlik Mexanizmlari (Security Architecture)
+## 🧪 Qo'lda Sinash Bosqichlari (Manual Testing)
 
-1. **2 Bosqichli Admin Kirishi:**
-   - `/admin` buyrug'i bosilganda bot shaxsiy ID ni so'raydi.
-   - Kiritilgan ID ham `ADMIN_IDS` ro'yxatida bo'lishi, ham xabarni yuborgan foydalanuvchining haqiqiy `message.from_user.id` siga teng bo'lishi shart!
-   - 3 marta noto'g'ri urinish amalga oshirilsa, foydalanuvchi **10 daqiqaga to'liq bloklanadi** va xavfsizlik logi yoziladi.
-2. **IDOR (Insecure Direct Object Reference) Himoyasi:**
-   - Ota-ona yoki o'quvchi faqat va faqat ma'muriyat tomonidan o'ziga biriktirilgan farzand ma'lumotlarini (baho, davomat, o'qituvchi izohi) ko'ra oladi.
-3. **Protect Content:**
-   - Barcha bot xabarlari `protect_content=True` bilan jo'natiladi (forward qilish va saqlash bloklangan).
-4. **Throttling (Anti-flood):**
-   - 1 soniyada 1 tadan ortiq so'rov yuborish avtomatik to'xtatiladi.
-5. **SQL Injection himoyasi:**
-   - Barcha so'rovlar faqat SQLAlchemy 2.0 ORM orqali parametrlangan holda bajariladi.
+Loyiha to'liq tayyor bo'lgach, uni quyidagi ketma-ketlikda qo'lda sinab ko'rishingiz mumkin:
 
----
-
-## 🚀 Serverga Joylash (Deployment)
-
-### Usul 1: Docker va Docker Compose (Tavsiya etiladi)
-
-Loyiha non-root foydalanuvchisi (`falconuser`) bilan xavfsiz konteynerlashtirilgan.
-
-```bash
-# Konteynerni fonda ishga tushirish
-docker-compose up -d --build
-
-# Loglarni jonli kuzatish
-docker-compose logs -f
-
-# To'xtatish
-docker-compose down
-```
-
-### Usul 2: Linux Systemd Xizmati sifatida
-
-`/etc/systemd/system/falcon_bot.service` faylini yarating:
-
-```ini
-[Unit]
-Description=Falcon Kibertexnology School Telegram Bot
-After=network.target
-
-[Service]
-Type=simple
-User=falconuser
-WorkingDirectory=/opt/falcon_bot
-ExecStart=/opt/falcon_bot/venv/bin/python -m app.main
-Restart=always
-RestartSec=5
-EnvironmentFile=/opt/falcon_bot/.env
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Xizmatni faollashtirish:
-```bash
-sudo systemctl daemon-reload
-sudo systemctl enable falcon_bot
-sudo systemctl start falcon_bot
-sudo systemctl status falcon_bot
-```
-
----
-
-## 🧪 Testlarni Ishga Tushirish
-
-Barcha funksional, xavfsizlik va integratsion testlarni ishga tushirish uchun:
-
-```bash
-pytest -v --cov=app
-```
+1. **Botda ro'yxatdan o'tish:**
+   - Botga kiring va `/start` bosing.
+   - Menyuda "🏆 Reyting" tugmasi chiqadi.
+2. **Admin sifatida kirish:**
+   - `/admin` buyrug'ini yuboring va `07070707` parolini kiriting.
+   - Admin menyusi ochiladi.
+3. **Mini App ni brauzerda yoki Telegramda ochish:**
+   - Brauzerda: `http://localhost:8080` manziliga kiring (agar admin bo'lmagan foydalanuvchi kabi kirilsa, faqat logo chiqadi).
+   - Telegramda: Admin menyusidagi "📱 Mini App" tugmasi orqali kiring.
+4. **Davomat belgilash:**
+   - Dushanbadan Shanbagacha istalgan kunni tanlang.
+   - O'quvchilar qarshisidagi "✅ Keldi / ❌ Kelmadi" tugmalarini bosing.
+   - "Saqlash va yuborish" ni bosing. Bot barcha foydalanuvchilarga davomat jadvalini yuboradi.
+5. **Uyga vazifa baholash va Jarima:**
+   - "Baho" tabiga o'ting.
+   - 0 dan 10 gacha ball bering.
+   - Biror o'quvchida "Vazifa qilmadi" tugmasini bosing: ball 0 bo'lib, +10 000 so'm jarima qo'shiladi.
+6. **Qarz va to'lovlarni tekshirish:**
+   - "Qarz" tabiga o'ting. Jarimasi bor o'quvchilar yuqorida chiqadi.
+   - "To'lov" tugmasini bosib, to'langan summani kiriting (masalan, 10 000).
+   - "Qarz 100 000 → to'landi 10 000 → qoldi 90 000 so'm" xabarnomasi chiqadi va qarz kamayadi.
+7. **Reytingni tekshirish:**
+   - Botda "🏆 Reyting" tugmasini bosing. O'sha haftada eng ko'p ball to'plagan TOP-4 o'quvchi emojilar bilan chiqadi.

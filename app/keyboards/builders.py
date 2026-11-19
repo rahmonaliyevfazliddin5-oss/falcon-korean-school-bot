@@ -9,8 +9,10 @@ from aiogram.types import (
     InlineKeyboardMarkup,
     KeyboardButton,
     ReplyKeyboardMarkup,
+    WebAppInfo,
 )
 
+from app.config import settings
 from app.database.models import Lesson, Student, TeacherNote
 from app.keyboards.callbacks import (
     AttendanceCallback,
@@ -46,6 +48,15 @@ def get_main_menu_keyboard(role: str = "user") -> ReplyKeyboardMarkup:
                 KeyboardButton(text="📊 Statistika"),
             ],
         ]
+        if settings.WEBAPP_URL:
+            keyboard.append(
+                [
+                    KeyboardButton(
+                        text="📱 Mini App (Boshqaruv)",
+                        web_app=WebAppInfo(url=settings.WEBAPP_URL),
+                    )
+                ]
+            )
     else:
         keyboard = [
             [
