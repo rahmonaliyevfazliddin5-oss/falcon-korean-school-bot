@@ -2,6 +2,7 @@ version: "3.8"
 
 services:
   falcon_bot:
+    user: "0:0"
     build: .
     container_name: falcon_kibertexnology_school_bot
     restart: unless-stopped

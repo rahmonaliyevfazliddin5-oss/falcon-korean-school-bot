@@ -41,15 +41,18 @@ def setup_logger() -> None:
     console_handler.setFormatter(formatter)
     console_handler.setLevel(log_level)
 
-    # Fayl oqimi (UTF-8)
-    file_handler = logging.FileHandler(log_file, encoding="utf-8")
-    file_handler.setFormatter(formatter)
-    file_handler.setLevel(log_level)
-
     root_logger = logging.getLogger()
     root_logger.setLevel(log_level)
     root_logger.addHandler(console_handler)
-    root_logger.addHandler(file_handler)
+
+    # Fayl oqimi (UTF-8)
+    try:
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        file_handler.setFormatter(formatter)
+        file_handler.setLevel(log_level)
+        root_logger.addHandler(file_handler)
+    except Exception as e:
+        sys.stderr.write(f"[WARN] Faylga log yozish sozlanmadi: {e}\n")
 
 
 logger = logging.getLogger(__name__)
