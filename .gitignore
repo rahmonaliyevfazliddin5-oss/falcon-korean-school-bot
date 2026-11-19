@@ -1,0 +1,39 @@
+# Muhit o'zgaruvchilari va maxfiy ma'lumotlar
+.env
+*.env
+!.env.example
+
+# Ma'lumotlar bazasi fayllari
+*.db
+*.sqlite
+*.sqlite3
+
+# Python va virtual muhit
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+venv/
+.venv/
+env/
+
+# IDE va tahrirlovchilar
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Jurnallar va eksportlar (Logs and exports)
+*.log
+logs/
+exports/
+*.xlsx
+
+# Test, kesh va sifat nazorati
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
